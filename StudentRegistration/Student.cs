@@ -59,7 +59,7 @@ namespace StudentRegistration
             { 
                 if (value < 6 || value > 20)
                 {
-                    throw new ArgumentOutOfRangeException( "Възрастта трябва да бъде между 6 и 20 години");
+                    throw new ArgumentOutOfRangeException("Възрастта трябва да бъде между 6 и 20 години");
                 }
                 age = value;
             }
@@ -104,7 +104,17 @@ namespace StudentRegistration
                 fee = value;
             }
         }
-        public bool HasScholarship { get; set; }
+        public bool HasScholarship
+        {
+            get 
+            { 
+                return hasscholarship;
+            }
+            set 
+            { 
+                hasscholarship = value;
+            }
+        }
         public char ClassLetter 
         {
             get
@@ -138,7 +148,7 @@ namespace StudentRegistration
 
         public Student(int id, string name)
         {
-            this.id = id;
+            Id = id;
             Name = name;
         }
 
