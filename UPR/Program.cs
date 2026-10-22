@@ -10,7 +10,7 @@ namespace UPR
     internal class Program
     {
         static List<Tasks> tasks = new List<Tasks>();
-
+        private static int nextId = 1;
         static void Main(string[] args)
         {
             while (true)
@@ -68,12 +68,23 @@ namespace UPR
             string description = Console.ReadLine();
 
             Console.Write("Enter deadline: ");
-            string deadLine = Console.ReadLine();
+            DateTime deadLine = DateTime.Parse(Console.ReadLine());
 
-            Tasks newTask = new Tasks(title, description, deadLine);
-            tasks.Add(newTask);
 
-            Console.WriteLine("Task added successfully!");
+            try
+            {
+                Tasks newTask = new Tasks(nextId, title, description, deadLine);
+                tasks.Add(newTask);
+                nextId++;
+                Console.WriteLine("Task added successfully!");
+
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+           catch(ArgumentNullException ex)
+            { Console.WriteLine(ex.Message); }
             Console.ReadKey();
         }
         static void ShowTasks()
