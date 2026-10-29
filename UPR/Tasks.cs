@@ -10,49 +10,81 @@ namespace UPR
 {
     internal class Tasks
     {
-        private int id;
+
         private string title;
-        private string description;
-        private DateTime deadline;
+        private DateTime dueDate;
         private bool isCompleted;
 
-        public int Id { get; set; }
+        public int Id { get; private set; }
         public string Title
         {
-            get 
-            { 
-             return title; 
+            get
+            {
+                return title;
             }
             set
-            { if (string.IsNullOrEmpty(title))
-                    throw new ArgumentNullException("the title is a must"); 
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new ArgumentException("Заглавието е задължително");
+
+                title = value;
             }
-            
         }
         public string Description { get; set; }
-        public DateTime DeadLine { get; set; }
-        public bool IsCompleted { get; set; }
-
-        public Tasks(int id, string title, string description, DateTime deadLine) 
+        public DateTime DueDate
         {
-            if (id <= 0) 
-                throw new ArgumentOutOfRangeException("id has to be a positive number");
-            if (string.IsNullOrEmpty(title))
-                throw new ArgumentNullException("the title is a must");
+            get
+            {
+                return dueDate;
+            }
+            set
+            {
+                if (value < DateTime.Today)
+                    throw new ArgumentException("Крайната дата не трябва да е в миналото");
+
+                dueDate = value;
+            }
+        }
+        public bool IsCompleted
+        {
+            get
+            {
+                return isCompleted;
+            }
+            private set
+            {
+                isCompleted = value;
+            }
+        }
+
+        public Tasks(int id, string title, string description, DateTime dueDate)
+        {
+            if (id <= 0)
+                throw new ArgumentOutOfRangeException(nameof(id), "Id трябва да е положително число");
 
             Id = id;
             Title = title;
             Description = description;
-            DeadLine = deadLine;
+            DueDate = dueDate;
             IsCompleted = false;
+
         }
 
-        
+        public void Completed()
+        {
+            if (IsCompleted)
+                throw new InvalidOperationException(
+                    "Задачата вече е завършена.");
 
+            isCompleted = true;
+        }
 
+        public override string ToString()
+        {
+            var status = IsCompleted ? "Завършена" : "Незавършена";
 
-
-
+            return $"{Id}. {Title} | {Description} | {DueDate:d} | {status}";
+        }
 
     }
 }

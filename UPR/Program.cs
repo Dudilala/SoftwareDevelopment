@@ -9,161 +9,137 @@ namespace UPR
 {
     internal class Program
     {
-        static List<Tasks> tasks = new List<Tasks>();
-        private static int nextId = 1;
+       static TodoService service = new TodoService();
+       
         static void Main(string[] args)
         {
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+
             while (true)
             {
                 Console.Clear();
-                Console.WriteLine("\n---MENU---");
-                Console.WriteLine("1.Add new task:");
-                Console.WriteLine("2.Show tasks:");
-                Console.WriteLine("3.Check task:");
-                Console.WriteLine("4.Delete task:");
-                Console.WriteLine("5.End program:");
-                Console.Write("Choice: ");
-
-                string choice = Console.ReadLine();
                 Console.WriteLine();
+                Console.WriteLine("======= TODO MANAGER ========");
+                Console.WriteLine("1. Добави задача");
+                Console.WriteLine("2. Покажи задачи");
+                Console.WriteLine("3. Маркирай задача като изпълнена");
+                Console.WriteLine("4. Изтрий задача");
+                Console.WriteLine("5. Изход");
 
-
-                switch (choice)
+                Console.WriteLine();
+                Console.Write("Избор: ");
+                string choice = Console.ReadLine();
+                try
                 {
-                    case "1":
-                        AddTask();
-                        break;
-
-                    case "2":
-                        ShowTasks();
-                        break;
-
-                    case "3":
-                        CheckTasks();
-                        break;
-
-                    case "4":
-                        DeleteTasks();
-                        break;
-
-                    case "5":
-                        Console.WriteLine("bye!");
-                        return;
-
-                    default:
-                        Console.WriteLine("invalid choice. press a button...");
-                        Console.ReadKey();
-                        break;
+                    switch (choice)
+                    {
+                        case "1": { AddTodo(); break; }
+                        case "2": { ListAllTodos(); break; }
+                        case "3": { CompleteTodo(); break; }
+                        case "4": { DeleteTodo(); break; }
+                        case "x": { Console.WriteLine("Край на програмата"); Console.ReadLine(); return; }
+                        default: { Console.WriteLine("Невалиден избор."); break; }
+                    }
                 }
+                catch (ArgumentOutOfRangeException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Console.WriteLine(ex.Message);
+
+                }
+                catch (ArgumentException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                Console.ReadLine();
             }
         }
 
-        static void AddTask()
+        private static void DeleteTodo()
         {
-            Console.WriteLine("---Add new task---");
-            Console.Write("Enter task: ");
-            string title = Console.ReadLine();
+            Console.Clear();
+            Console.WriteLine();
+            Console.WriteLine("=====  Изтрий задача =======\n");
+            ListAllTodos();
 
-            Console.Write("Enter description: ");
-            string description = Console.ReadLine();
-
-            Console.Write("Enter deadline: ");
-            DateTime deadLine = DateTime.Parse(Console.ReadLine());
-
-
-            try
+            Console.Write("Избери Id: ");
+            int id;
+            while (!int.TryParse(Console.ReadLine(), out id))
             {
-                Tasks newTask = new Tasks(nextId, title, description, deadLine);
-                tasks.Add(newTask);
-                nextId++;
-                Console.WriteLine("Task added successfully!");
+                Console.WriteLine("Невалидно id.");
+                Console.Write("Избери Id: ");
+            }
+            
+            service.Delete(id);
+            Console.WriteLine("Задачата е изтрита.");
 
-            }
-            catch (ArgumentOutOfRangeException ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-           catch(ArgumentNullException ex)
-            { Console.WriteLine(ex.Message); }
-            Console.ReadKey();
         }
-        static void ShowTasks()
-        {
-            Console.WriteLine("--- Tasks ---");
 
+        private static void CompleteTodo()
+        {
+            Console.Clear();
+            Console.WriteLine();
+            Console.WriteLine("=====  Маркирай задача като завършена =======\n");
+            ListAllTodos();
+
+            Console.Write("Избери Id: ");
+            int id;
+            while (!int.TryParse(Console.ReadLine(), out id))
+            {
+                Console.WriteLine("Невалидно id.");
+                Console.Write("Избери Id: ");
+            }
+            service.Complete(id);
+            Console.WriteLine("Задачата е завършена.");
+
+
+        }
+
+        private static void ListAllTodos()
+        {
+            Console.Clear();
+            Console.WriteLine();
+            Console.WriteLine("===== Всички задачи  =======");
+            var tasks = service.GetAll();
             if (tasks.Count == 0)
             {
-                Console.WriteLine("There are no tasks.");
+                Console.WriteLine("Няма въведени задачи");
             }
             else
             {
-                for (int i = 0; i < tasks.Count; i++)
+                foreach (Tasks todoItem in tasks)
                 {
-                    Console.WriteLine();
-                    Console.WriteLine("Task number: " + (i + 1));
-                    Console.WriteLine("Title: " + tasks[i].Title);
-                    Console.WriteLine("Description: " + tasks[i].Description);
-                    Console.WriteLine("Deadline: " + tasks[i].DeadLine);
-                    Console.WriteLine("Completed: " + tasks[i].IsCompleted);
+                    Console.WriteLine($"{todoItem}");
                 }
             }
-
-            Console.ReadKey();
         }
 
-
-        static void CheckTasks()
+        private static void AddTodo()
         {
-            Console.WriteLine("--- Check task ---");
+            Console.Clear();
+            Console.WriteLine();
+            Console.WriteLine("=====  Добавяне на задача =======");
 
-            if (tasks.Count == 0)
+            Console.Write("Заглавие:");
+            string title = Console.ReadLine();
+
+            Console.Write("Описание:");
+            string description = Console.ReadLine();
+
+            Console.Write("Краен срок:");
+            DateTime dueDate;
+            while (!DateTime.TryParse(Console.ReadLine(), out dueDate))
             {
-                Console.WriteLine("There are no tasks.");
-                Console.ReadKey();
-                return;
+                Console.WriteLine("Невалидна дата.Въведи отново!");
+                Console.Write("Краен срок: ");
             }
 
-            ShowTaskTitles();
+            service.Add(title, description, dueDate);
+            Console.WriteLine("Задачата е добавена.");
 
-            Console.Write("Enter task number: ");
-            int number = int.Parse(Console.ReadLine());
-
-            tasks[number - 1].IsCompleted = true;
-
-            Console.WriteLine("Task completed!");
-            Console.ReadKey();
-        }
-
-
-        static void DeleteTasks()
-        {
-            Console.WriteLine("--- Delete task ---");
-
-            if (tasks.Count == 0)
-            {
-                Console.WriteLine("There are no tasks.");
-                Console.ReadKey();
-                return;
-            }
-
-            ShowTaskTitles();
-
-            Console.Write("Enter task number: ");
-            int number = int.Parse(Console.ReadLine());
-
-            tasks.RemoveAt(number - 1);
-
-            Console.WriteLine("Task deleted!");
-            Console.ReadKey();
-        }
-
-
-        static void ShowTaskTitles()
-        {
-            for (int i = 0; i < tasks.Count; i++)
-            {
-                Console.WriteLine((i + 1) + ". " + tasks[i].Title);
-            }
         }
     }
 }
